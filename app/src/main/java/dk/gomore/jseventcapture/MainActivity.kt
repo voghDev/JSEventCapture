@@ -13,20 +13,14 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
     private val data = """
-        <script language="javascript" type="text/javascript">
-       function handleButtonClick() {
-            alert('[JS] Button was clicked');
-            androidButton.onCapturedButtonClicked();
-       }
-        </script>
-        
-        <button type='button' id='someButton' onclick='handleButtonClick();'>Click me</button>
+        <button type='button' id='someButton'>Click me</button>
     """
 
     val injectedFunction = """
         javascript:(function() {
             window.someButton.onclick = function() {
                 alert('Button Clicked');
+                androidButton.onCapturedButtonClicked();
             }
         })()
     """
@@ -46,12 +40,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_main)
-
-        val invisibleButton = Button(this).apply {
-            setOnClickListener {
-                showClickMessage()
-            }
-        }
 
         webView.settings.javaScriptEnabled = true
         webView.webChromeClient = WebChromeClient()
