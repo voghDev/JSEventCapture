@@ -23,14 +23,20 @@ class MainActivity : AppCompatActivity() {
         <button type='button' id='someButton' onclick='handleButtonClick();'>Click me</button>
     """
 
+    val injectedFunction = """
+        javascript:(function() {
+            window.someButton.onclick = function() {
+                alert('Button Clicked');
+            }
+        })()
+    """
+
     private val webViewClient = object : WebViewClient() {
         override fun onPageFinished(view: WebView?, url: String?) {
             super.onPageFinished(view, url)
 
             view?.let {
-                it.loadUrl(
-                    "javascript:window.androidButton.javascriptMethodName = function(message) { androidButton.onCapturedButtonClicked() }"
-                )
+                it.loadUrl(injectedFunction)
             }
         }
     }
