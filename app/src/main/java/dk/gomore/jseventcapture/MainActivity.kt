@@ -5,35 +5,20 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
-import android.webkit.WebView
-import android.webkit.WebViewClient
-import android.widget.Button
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
     private val data = """
-        <script language="javascript" type="text/javascript">
-       function handleButtonClick() {
+    <script language="javascript" type="text/javascript">
+        function handleButtonClick() {
             alert('[JS] Button was clicked');
             androidButton.onCapturedButtonClicked();
-       }
-        </script>
-        
-        <button type='button' id='someButton' onclick='handleButtonClick();'>Click me</button>
-    """
-
-    private val webViewClient = object : WebViewClient() {
-        override fun onPageFinished(view: WebView?, url: String?) {
-            super.onPageFinished(view, url)
-
-            view?.let {
-                it.loadUrl(
-                    "javascript:window.androidButton.javascriptMethodName = function(message) { androidButton.onCapturedButtonClicked() }"
-                )
-            }
         }
-    }
+    </script>
+        
+    <button type='button' id='someButton' onclick='handleButtonClick();'>Click me</button>
+    """
 
     @SuppressLint("JavascriptInterface")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,15 +26,8 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_main)
 
-        val invisibleButton = Button(this).apply {
-            setOnClickListener {
-                showClickMessage()
-            }
-        }
-
         webView.settings.javaScriptEnabled = true
         webView.webChromeClient = WebChromeClient()
-        webView.webViewClient = webViewClient
         webView.addJavascriptInterface(CaptureClickJavascriptInterface(), "androidButton")
         webView.loadData(data, "text/html", "UTF-8")
     }
