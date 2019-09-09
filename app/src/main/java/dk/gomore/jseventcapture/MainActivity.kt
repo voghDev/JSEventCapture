@@ -3,6 +3,7 @@ package dk.gomore.jseventcapture
 import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -12,14 +13,14 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
     private val data = """
-        <script language="javascript">
+        <script language="javascript" type="text/javascript">
        function handleButtonClick() {
-          alert('[JS] Button was clicked');
-          androidButton.performClick();
+            alert('[JS] Button was clicked');
+            androidButton.onCapturedButtonClicked();
        }
         </script>
         
-        <button type='button' id='btn' onclick='handleButtonClick();'>Click me</button>
+        <button type='button' id='someButton' onclick='handleButtonClick();'>Click me</button>
     """
 
     private val webViewClient = object : WebViewClient() {
@@ -28,9 +29,7 @@ class MainActivity : AppCompatActivity() {
 
             view?.let {
                 it.loadUrl(
-                    "javascript:(function(){ " +
-                            "alert('Hey'); " +
-                            "})()"
+                    "javascript:window.androidButton.javascriptMethodName = function(message) { androidButton.onCapturedButtonClicked() }"
                 )
             }
         }
@@ -42,15 +41,31 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_main)
 
-        val invisibleButton = Button(this)
-        invisibleButton.setOnClickListener {
-            Toast.makeText(this, "JavaScript event was captured", Toast.LENGTH_LONG).show()
+        val invisibleButton = Button(this).apply {
+            setOnClickListener {
+                showClickMessage()
+            }
         }
 
         webView.settings.javaScriptEnabled = true
         webView.webChromeClient = WebChromeClient()
         webView.webViewClient = webViewClient
-        webView.addJavascriptInterface(invisibleButton, "androidButton")
+        webView.addJavascriptInterface(CaptureClickJavascriptInterface(), "androidButton")
         webView.loadData(data, "text/html", "UTF-8")
+    }
+
+    private fun showClickMessage() {
+        Toast.makeText(
+            this@MainActivity,
+            "[Android] JavaScript button was clicked",
+            Toast.LENGTH_LONG
+        ).show()
+    }
+
+    private inner class CaptureClickJavascriptInterface {
+        @JavascriptInterface
+        fun onCapturedButtonClicked() {
+            showClickMessage()
+        }
     }
 }
